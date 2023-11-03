@@ -1,6 +1,12 @@
 ## scDiffusion: Conditional Generation of High-Quality Single-Cell Data Using Diffusion Model
 Welcome to the code base for scDiffusion, a model developed for the generation of scRNA-seq data. This model utilizes a diffusion framework.
 
+<!-- ![image](model_archi.png) -->
+<div align="center">  
+    <img src="model_archi.png" width="650">  
+</div>  
+
+
 # Environment
 ```
 pytorch                   1.13.0  
