@@ -45,9 +45,6 @@ def main():
     all_cells = []
     while len(all_cells) * args.batch_size < args.num_samples:
         model_kwargs = {}
-        if args.class_cond:
-            classes = 1*th.ones((args.batch_size,), device=dist_util.dev(), dtype=th.long)
-            model_kwargs["y"] = classes
         sample_fn = (
             diffusion.p_sample_loop if not args.use_ddim else diffusion.ddim_sample_loop
         )
@@ -56,7 +53,7 @@ def main():
             (args.batch_size, args.input_dim), 
             clip_denoised=args.clip_denoised,
             model_kwargs=model_kwargs,
-            # noise=th.tensor(sc.read_h5ad('masked_cell.h5ad').X, device=dist_util.dev()),
+            start_time=diffusion.betas.shape[0],
         )
 
         gathered_samples = [th.zeros_like(sample) for _ in range(dist.get_world_size())]
@@ -71,16 +68,14 @@ def main():
     logger.log("sampling complete")
 
 
-
 def create_argparser():
     defaults = dict(
         clip_denoised=False,
-        num_samples=6000,
+        num_samples=3000,
         batch_size=3000,
         use_ddim=False,
-        model_path="/data1/lep/Workspace/guided-diffusion/checkpoint/muris_all/model800000.pt",
-        data_dir="/",
-        sample_dir="output/my_generation"
+        model_path="output/diffusion_checkpoint/muris_diffusion/model000000.pt",
+        sample_dir="output/simulated_samples/muris"
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()

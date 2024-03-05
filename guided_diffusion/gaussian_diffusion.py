@@ -404,6 +404,7 @@ class GaussianDiffusion:
         cond_fn=None,
         model_kwargs=None,
         nw=0.5,
+        start_guide_steps=500,
     ):
         """
         Sample x_{t-1} from the model at the given timestep.
@@ -434,13 +435,10 @@ class GaussianDiffusion:
         nonzero_mask = (
             (t != 0).float().view(-1, *([1] * (len(x.shape) - 1)))
         )  # no noise when t == 0
-        if cond_fn is not None and t[0]<1000:
+        if cond_fn is not None and t[0]<start_guide_steps:
             out["mean"] = self.condition_mean(
                 cond_fn, out, x, t, model_kwargs=model_kwargs
             )
-        # if t[0]<500:
-        #     sample = out["mean"] + nonzero_mask * th.exp(0.7 * out["log_variance"]) * noise
-        # else:
         sample = out["mean"] + nonzero_mask * th.exp(nw * out["log_variance"]) * noise
         return {"sample": sample, "pred_xstart": out["pred_xstart"]}
 
@@ -455,8 +453,8 @@ class GaussianDiffusion:
         model_kwargs=None,
         device=None,
         progress=False,
-        sample_steps=2000,
-        start_time=2000,
+        start_guide_steps=500,
+        start_time=1000,
         nw=0.5,
     ):
         """
@@ -492,13 +490,11 @@ class GaussianDiffusion:
             progress=progress,
             start_time=start_time,
             nw=nw,
+            start_guide_steps=start_guide_steps,
         )):
             final = sample
-            if i%200==0:# and i>=1800:
+            if i%200==0:
                 print('step ',i)
-                traj.append(final["sample"])
-            if i == sample_steps:
-                return final["sample"], traj
         return final["sample"], traj
 
     def p_sample_loop_progressive(
@@ -512,8 +508,10 @@ class GaussianDiffusion:
         model_kwargs=None,
         device=None,
         progress=False,
-        start_time=2000,
+        start_time=1000,
         nw=0.5,
+        start_guide_steps=500,
+
     ):
         """
         Generate samples from the model and yield intermediate samples from
@@ -550,6 +548,7 @@ class GaussianDiffusion:
                     cond_fn=cond_fn,
                     model_kwargs=model_kwargs,
                     nw=nw,
+                    start_guide_steps=start_guide_steps,
                 )
                 yield out
                 img = out["sample"]

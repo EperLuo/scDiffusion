@@ -14,7 +14,10 @@ from torch.optim import AdamW
 
 from guided_diffusion import dist_util, logger
 from guided_diffusion.fp16_util import MixedPrecisionTrainer
+# from guided_diffusion.cell_datasets_pbmc import load_data
+# from guided_diffusion.cell_datasets_WOT import load_data
 from guided_diffusion.cell_datasets_muris import load_data
+# from guided_diffusion.cell_datasets_sapiens import load_data
 from guided_diffusion.resample import create_named_schedule_sampler
 from guided_diffusion.script_util import (
     add_dict_to_argparser,
@@ -23,7 +26,6 @@ from guided_diffusion.script_util import (
     create_classifier_and_diffusion,
 )
 from guided_diffusion.train_util import parse_resume_step_from_filename, log_loss_dict
-from VAE.VAE_model import VAE
 import torch
 import torch.nn as nn
 import numpy as np
@@ -72,25 +74,24 @@ def main():
         output_device=dist_util.dev(),
         broadcast_buffers=False,
         bucket_cap_mb=128,
-        find_unused_parameters=False,
+        find_unused_parameters=True,
     )
 
     logger.log("creating data loader...")
     data = load_data(
         data_dir=args.data_dir,
         batch_size=args.batch_size,
-        class_cond=True,
-        ae_dir=args.ae_dir,
-        num_gene=args.num_genes,
+        vae_path=args.vae_path,
+        hidden_dim=args.latent_dim,
+        train_vae=False,
     )
     if args.val_data_dir:
         val_data = load_data(
             data_dir=args.val_data_dir,
             batch_size=args.batch_size,
-            image_size=args.image_size,
-            class_cond=True,
-            ae_dir=args.ae_dir,
-            num_gene=args.num_genes,
+            vae_path=args.vae_path,
+            hidden_dim=args.latent_dim,
+            train_vae=False,
         )
     else:
         val_data = None
@@ -113,9 +114,9 @@ def main():
         labels = extra["y"].to(dist_util.dev())
 
         batch = batch.to(dist_util.dev())
-        # Noisy images
+        # Noisy cells
         if args.noised:
-            t, _ = schedule_sampler.sample(batch.shape[0], dist_util.dev())
+            t, _ = schedule_sampler.sample(batch.shape[0], dist_util.dev(), start_guide_time=args.start_guide_time)
             batch = diffusion.q_sample(batch, t)
         else:
             t = th.zeros(batch.shape[0], dtype=th.long, device=dist_util.dev())
@@ -140,6 +141,7 @@ def main():
                     mp_trainer.zero_grad()
                 mp_trainer.backward(loss * len(sub_batch) / len(batch))
 
+    model_path = args.model_path
     for step in range(args.iterations - resume_step):
         logger.logkv("step", step + resume_step)
         logger.logkv(
@@ -164,11 +166,11 @@ def main():
             and not (step + resume_step) % args.save_interval
         ):
             logger.log("saving model...")
-            save_model(mp_trainer, opt, step + resume_step, args.classifier_dir)
+            save_model(mp_trainer, opt, step + resume_step, model_path)
 
     if dist.get_rank() == 0:
         logger.log("saving model...")
-        save_model(mp_trainer, opt, step + resume_step, args.classifier_dir)
+        save_model(mp_trainer, opt, step + resume_step, model_path)
     dist.barrier()
 
 
@@ -178,9 +180,9 @@ def set_annealed_lr(opt, base_lr, frac_done):
         param_group["lr"] = lr
 
 
-def save_model(mp_trainer, opt, step, cl_name):
+def save_model(mp_trainer, opt, step, model_path):
     if dist.get_rank() == 0:
-        model_dir = cl_name
+        model_dir = model_path
         os.makedirs(model_dir,exist_ok=True)
         th.save(
             mp_trainer.master_params_to_state_dict(mp_trainer.master_params),
@@ -211,7 +213,7 @@ def create_argparser():
         data_dir="/data1/lep/Workspace/guided-diffusion/data/tabula_muris/all.h5ad",
         val_data_dir="",
         noised=True,
-        iterations=1000000,
+        iterations=500000,
         lr=3e-4,
         weight_decay=0.0,
         anneal_lr=False,
@@ -221,12 +223,14 @@ def create_argparser():
         resume_checkpoint="",
         log_interval=100,
         eval_interval=100,
-        save_interval=200000,
-        classifier_dir="checkpoint/classifier/my_classifier",
-        ae_dir='checkpoint/AE/muris_all/model_seed=0_step=800000.pt',
-        num_genes=18996,
+        save_interval=100000,
+        vae_path='output/Autoencoder_checkpoint/muris_AE/model_seed=0_step=0.pt',
+        latent_dim=128,
+        model_path='output/classifier_checkpoint/classifier_muris',
+        start_guide_time=500,
     )
     defaults.update(classifier_and_diffusion_defaults())
+    defaults['num_class']= 12
     parser = argparse.ArgumentParser()
     add_dict_to_argparser(parser, defaults)
     return parser
@@ -235,7 +239,6 @@ def setup_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
-    # random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
 if __name__ == "__main__":
