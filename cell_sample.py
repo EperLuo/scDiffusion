@@ -74,7 +74,7 @@ def create_argparser():
         num_samples=3000,
         batch_size=3000,
         use_ddim=False,
-        model_path="output/diffusion_checkpoint/muris_diffusion/model000000.pt",
+        model_path="output/diffusion_checkpoint/muris_diffusion/model600000.pt",
         sample_dir="output/simulated_samples/muris"
     )
     defaults.update(model_and_diffusion_defaults())

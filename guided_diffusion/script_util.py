@@ -67,7 +67,6 @@ def create_model_and_diffusion(
     model = create_model(
         input_dim,
         hidden_dim,
-        num_classes=NUM_CLASSES if class_cond else None,
         dropout=dropout
     )
     diffusion = create_gaussian_diffusion(
@@ -86,14 +85,12 @@ def create_model_and_diffusion(
 def create_model(
     input_dim,
     hidden_dim,
-    num_classes,
     dropout,
 ):
 
     return Cell_Unet(
         input_dim,
         hidden_dim,
-        # num_classes=num_classes,
         dropout=dropout
     )
 

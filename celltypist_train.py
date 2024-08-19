@@ -34,4 +34,4 @@ test_adata.write_h5ad('data/testset_muris_all.h5ad')
 
 new_model = celltypist.train(adata_resampled, labels = y_resampled[:80000], n_jobs=32)
 
-new_model.write('checkpoint/my_celltypist.pkl')
+new_model.write('output/checkpoint/celltypist/my_celltypist.pkl')

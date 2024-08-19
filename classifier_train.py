@@ -14,10 +14,7 @@ from torch.optim import AdamW
 
 from guided_diffusion import dist_util, logger
 from guided_diffusion.fp16_util import MixedPrecisionTrainer
-# from guided_diffusion.cell_datasets_pbmc import load_data
-# from guided_diffusion.cell_datasets_WOT import load_data
-from guided_diffusion.cell_datasets_muris import load_data
-# from guided_diffusion.cell_datasets_sapiens import load_data
+from guided_diffusion.cell_datasets_loader import load_data
 from guided_diffusion.resample import create_named_schedule_sampler
 from guided_diffusion.script_util import (
     add_dict_to_argparser,
@@ -228,9 +225,11 @@ def create_argparser():
         latent_dim=128,
         model_path='output/classifier_checkpoint/classifier_muris',
         start_guide_time=500,
+        num_class=12,
     )
+    num_class = defaults['num_class']
     defaults.update(classifier_and_diffusion_defaults())
-    defaults['num_class']= 12
+    defaults['num_class']= num_class
     parser = argparse.ArgumentParser()
     add_dict_to_argparser(parser, defaults)
     return parser

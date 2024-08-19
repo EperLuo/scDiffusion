@@ -5,10 +5,7 @@ Train a diffusion model on images.
 import argparse
 
 from guided_diffusion import dist_util, logger
-# from guided_diffusion.cell_datasets import load_data
-# from guided_diffusion.cell_datasets_WOT import load_data
-# from guided_diffusion.cell_datasets_sapiens import load_data
-from guided_diffusion.cell_datasets_muris import load_data
+from guided_diffusion.cell_datasets_loader import load_data
 from guided_diffusion.resample import create_named_schedule_sampler
 from guided_diffusion.script_util import (
     model_and_diffusion_defaults,
@@ -73,7 +70,7 @@ def create_argparser():
         lr=1e-4,
         weight_decay=0.0001,
         lr_anneal_steps=500000,
-        batch_size=128,
+        batch_size=12,
         microbatch=-1,  # -1 disables microbatches
         ema_rate="0.9999",  # comma-separated list of EMA values
         log_interval=100,

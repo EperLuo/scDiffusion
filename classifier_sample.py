@@ -270,7 +270,7 @@ def main(cell_type=[0], multi=False, inter=False, weight=[10,10]):
             logger.log(f"created {len(all_cell) * args.batch_size} samples")
 
     arr = np.concatenate(all_cell, axis=0)
-    save_data(arr, traj, args.sample_dir)
+    save_data(arr, traj, args.sample_dir+str(cell_type[0]))
 
     dist.barrier()
     logger.log("sampling complete")
@@ -286,24 +286,24 @@ def create_argparser(celltype=[0], weight=[10,10]):
 
         model_path="output/diffusion_checkpoint/muris_diffusion/model000000.pt", 
 
-        # commen conditional generation & gradiante interpolation
+        # ***if commen conditional generation & gradiante interpolation, use this path***
         classifier_path="output/classifier_checkpoint/classifier_muris/model000100.pt",
-        # multi-conditional
+        # ***if multi-conditional, use this path. replace this to your own classifiers***
         classifier_path1="output/classifier_checkpoint/classifier_muris_ood_type/model200000.pt",
         classifier_path2="output/classifier_checkpoint/classifier_muris_ood_organ/model200000.pt",
-        num_class1 = 2,
-        num_class2 = 2,
+        num_class1 = 2,  # set this to the number of classes in your own dataset. this is the first condition (for example cell organ).
+        num_class2 = 2,  # this is the second condition (for example cell type).
 
-        # commen conditional generation
+        # ***if commen conditional generation, use this scale***
         classifier_scale=2,
-        # in multi-conditional, scale1 and scale2 are the weights of two classifiers
-        # in Gradient Interpolation, scale1 and scale2 are the weights of two gradients
+        # ***in multi-conditional, use this scale. scale1 and scale2 are the weights of two classifiers***
+        # ***in Gradient Interpolation, use this scale, too. scale1 and scale2 are the weights of two gradients***
         classifier_scale1=weight[0]*2/10,
         classifier_scale2=weight[1]*2/10,
 
-        # if gradient interpolation
+        # ***if gradient interpolation, replace these base on your own situation***
         ae_dir='output/Autoencoder_checkpoint/WOT/model_seed=0_step=150000.pt', 
-        num_gene=19423, # WOT 19423
+        num_gene=19423,
         init_time = 600,    # initial noised state if interpolation
         init_cell_path = 'data/WOT/filted_data.h5ad',   #input initial noised cell state
 
@@ -322,17 +322,17 @@ def create_argparser(celltype=[0], weight=[10,10]):
 
 if __name__ == "__main__":
     # for conditional generation
-    main(cell_type=[2])
-    # for type in range(15):#[0,1,2,3,4,5]:
-    #     main(cell_type=[type])
+    # main(cell_type=[2])
+    for type in range(12):
+        main(cell_type=[type])
 
-    # for multi-condition, run
+    # ***for multi-condition, run***
     # muris ood
     # for i in [0,1]:
     #     for j in [0,1]:
     #         main(cell_type=[i,j],multi=True)
 
-    # for Gradient Interpolation, run
+    # ***for Gradient Interpolation, run***
     # for i in range(0,11):
     #     main(cell_type=[6,7], inter=True, weight=[10-i,i])
     # for i in range(18):
