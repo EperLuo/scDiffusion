@@ -10,7 +10,8 @@ sys.path.append("..")
 # from guided_diffusion.cell_datasets import load_data
 # from guided_diffusion.cell_datasets_sapiens import load_data
 # from guided_diffusion.cell_datasets_WOT import load_data
-from guided_diffusion.cell_datasets_muris import load_data
+# from guided_diffusion.cell_datasets_muris import load_data
+from guided_diffusion.cell_datasets_loader import load_data
 
 torch.autograd.set_detect_anomaly(True)
 import random

@@ -1,5 +1,5 @@
 ## scDiffusion: Conditional Generation of High-Quality Single-Cell Data Using Diffusion Model
-Welcome to the code base for scDiffusion, a model developed for the generation of scRNA-seq data. This model combines the power of latent diffusion model and pre-trained model.
+Welcome to the code base for scDiffusion, a model developed for the generation of scRNA-seq data. This model combines the power of latent diffusion model and pre-trained model. More details about this model: https://doi.org/10.1093/bioinformatics/btae518.
 
 <!-- ![image](model_archi.png) -->
 <div align="center">  
