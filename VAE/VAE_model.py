@@ -309,7 +309,7 @@ class VAE(torch.nn.Module):
         return self.hparams
 
 
-    def train(self, genes):
+    def train_step(self, genes):
         """
         Train VAE.
         """
