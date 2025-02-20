@@ -1,0 +1,8 @@
+Logging to checkpoint/sample_logs
+creating model and diffusion...
+sampling...
+created 3000 samples
+created 6000 samples
+created 9000 samples
+created 12000 samples
+sampling complete

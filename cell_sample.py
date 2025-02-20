@@ -71,11 +71,11 @@ def main():
 def create_argparser():
     defaults = dict(
         clip_denoised=False,
-        num_samples=3000,
+        num_samples=12000,
         batch_size=3000,
         use_ddim=False,
-        model_path="output/diffusion_checkpoint/muris_diffusion/model600000.pt",
-        sample_dir="output/simulated_samples/muris"
+        model_path="output/checkpoint/backbone/open_problem/model800000.pt",
+        sample_dir="output/simulated_samples/open_problem"
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
