@@ -82,7 +82,7 @@ def train_vae(args, return_model=False):
 
         genes, _ = next(datasets)
 
-        minibatch_training_stats = autoencoder.train(genes)
+        minibatch_training_stats = autoencoder.train_step(genes)
 
         if step % 1000 == 0:
             for key, val in minibatch_training_stats.items():
