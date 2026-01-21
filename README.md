@@ -6,6 +6,7 @@ Welcome to the code base for scDiffusion, a model developed for the generation o
     <img src="model_archi.png" width="650">  
 </div>  
 
+**New**: A multiome version of scDiffusion can be found at: https://github.com/EperLuo/scDiffusion-X
 
 # Environment
 ```
